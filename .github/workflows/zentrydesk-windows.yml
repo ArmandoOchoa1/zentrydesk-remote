@@ -162,7 +162,9 @@ jobs:
           $msi = Get-ChildItem ./Package/bin/*/Release/en-us/Package.msi | Select-Object -First 1
           mv $msi.FullName ../../SignOutput/${{ env.ZD_NAME }}-${{ env.VERSION }}-x86_64.msi
           popd
-          Get-FileHash ./SignOutput/* -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Out-File -Encoding ascii ./SignOutput/sha256sums.txt
+          # Primero las huellas en memoria y después el archivo (si no, PowerShell intenta leer el archivo que está escribiendo).
+          $sums = Get-ChildItem ./SignOutput -File -Include *.exe,*.msi -Recurse | Get-FileHash -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" }
+          Set-Content -Path ./SignOutput/sha256sums.txt -Value $sums -Encoding ascii
           Get-Content ./SignOutput/sha256sums.txt
 
       - name: Upload artifacts
