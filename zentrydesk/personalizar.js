@@ -35,12 +35,13 @@ edit('libs/hbb_common/src/config.rs', [
 ]);
 
 // 2. Datos del ejecutable (Propiedades → Detalles en Windows).
+// Aplica al programa (Cargo.toml) y al ejecutable portátil que lo empaqueta (libs/portable/Cargo.toml).
 const meta = (file) => edit(file, [
-  [/ProductName = "RustDesk"/, `ProductName = "${APP}"`],
+  [/ProductName = "RustDesk"/, `ProductName = "${APP}"\nCompanyName = "Backend Peru"`],
   [/LegalCopyright = "[^"]*"/, 'LegalCopyright = "ZentryDesk de Backend Peru. Basado en RustDesk (AGPL-3.0)."'],
+  [/FileDescription = "RustDesk Remote Desktop"/, 'FileDescription = "ZentryDesk Remote - asistencia remota"'],
 ]);
 meta('Cargo.toml');
-edit('Cargo.toml', [[/FileDescription = "RustDesk Remote Desktop"/, 'FileDescription = "ZentryDesk Remote - asistencia remota"']]);
 meta('libs/portable/Cargo.toml');
 edit('flutter/windows/runner/Runner.rc', [
   ['VALUE "CompanyName", "Purslane Tech Pte. Ltd." "\\0"', 'VALUE "CompanyName", "Backend Peru" "\\0"'],
