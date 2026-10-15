@@ -27,8 +27,10 @@ edit('libs/hbb_common/src/config.rs', [
   [/pub const RS_PUB_KEY: &str = "[^"]*";/, `pub const RS_PUB_KEY: &str = "${KEY}";`],
   ['pub static ref APP_NAME: RwLock<String> = RwLock::new("RustDesk".to_owned());', `pub static ref APP_NAME: RwLock<String> = RwLock::new("${APP}".to_owned());`],
   // Nadie entra sin que el usuario acepte en su pantalla (no se usan contraseñas fijas).
+  // El servidor también va como opción: sin ella el cliente se cree en el servidor público
+  // (muestra "configure su propio servidor") y manda su estado a admin.rustdesk.com en vez de ZentryDesk.
   ['pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
-    `pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'approve-mode': 'click' })};`],
+    `pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'approve-mode': 'click', 'custom-rendezvous-server': SERVER, 'key': KEY, 'api-server': `http://${SERVER}:21114` })};`],
   // El usuario no puede cambiar el servidor ni la red: siempre ZentryDesk.
   ['pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
     `pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'hide-server-settings': 'Y', 'hide-proxy-settings': 'Y', 'hide-websocket-settings': 'Y' })};`],
