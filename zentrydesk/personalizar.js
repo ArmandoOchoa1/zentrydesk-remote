@@ -31,9 +31,10 @@ edit('libs/hbb_common/src/config.rs', [
   // (muestra "configure su propio servidor") y manda su estado a admin.rustdesk.com en vez de ZentryDesk.
   ['pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
     `pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'approve-mode': 'click', 'custom-rendezvous-server': SERVER, 'key': KEY, 'api-server': `http://${SERVER}:21114` })};`],
-  // El usuario no puede cambiar el servidor ni la red: siempre ZentryDesk.
+  // El usuario no puede cambiar el servidor ni la red: siempre ZentryDesk. El crédito a RustDesk queda en
+  // "Acerca de" y en las propiedades del ejecutable (AGPL), no en la pantalla principal.
   ['pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
-    `pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'hide-server-settings': 'Y', 'hide-proxy-settings': 'Y', 'hide-websocket-settings': 'Y' })};`],
+    `pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'hide-server-settings': 'Y', 'hide-proxy-settings': 'Y', 'hide-websocket-settings': 'Y', 'hide-powered-by-me': 'Y' })};`],
 ]);
 
 // 2. Datos del ejecutable (Propiedades → Detalles en Windows).
@@ -58,5 +59,7 @@ const copy = (from, to) => { fs.copyFileSync(path.join(icons, from), path.join(R
 for (const f of ['icon.ico', 'tray-icon.ico', 'icon.png', '32x32.png', '64x64.png', '128x128.png', '128x128@2x.png']) copy(f, `res/${f}`);
 copy('app_icon.ico', 'flutter/windows/runner/resources/app_icon.ico');
 copy('icon.svg', 'flutter/assets/icon.svg');
+// Logo con el nombre arriba del ID (la app busca logo_dark/logo_light/logo.png; generar-logo.ps1).
+for (const f of ['logo.png', 'logo_dark.png', 'logo_light.png']) copy(f, `flutter/assets/${f}`);
 
 console.log(`Listo: ${APP} → ${SERVER}`);
