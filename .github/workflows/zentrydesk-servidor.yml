@@ -1,0 +1,31 @@
+# Servidor de ZentryDesk Remote: hbbs de RustDesk Server 1.1.16 con el filtro de equipos registrados (src/zd_allow.rs).
+# Se compila en Linux x86_64 y, con una etiqueta srv-*, se publica como release.
+name: ZentryDesk servidor
+on:
+  push:
+    tags: ['srv-*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust 1.90
+        run: rustup toolchain install 1.90 --profile minimal && rustup default 1.90
+      - name: Compilar hbbs y hbbr
+        run: cargo build --release --bin hbbs --bin hbbr
+      - name: Empaquetar
+        run: |
+          mkdir out && cp target/release/hbbs target/release/hbbr out/
+          cd out && sha256sum hbbs hbbr > sha256sums.txt && cat sha256sums.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zentrydesk-servidor
+          path: out/*
+      - name: Publicar release
+        if: startsWith(github.ref, 'refs/tags/srv-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" out/* --title "ZentryDesk servidor $GITHUB_REF_NAME" --notes "hbbs/hbbr de RustDesk Server 1.1.16 con el filtro de equipos registrados de ZentryDesk (AGPL-3.0, código en la rama servidor)."
