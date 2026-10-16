@@ -29,10 +29,10 @@ edit('libs/hbb_common/src/config.rs', [
   // Nadie entra sin que el usuario acepte en su pantalla (no se usan contraseñas fijas).
   // El servidor también va como opción: sin ella el cliente se cree en el servidor público
   // (muestra "configure su propio servidor") y manda su estado a admin.rustdesk.com en vez de ZentryDesk.
-  // Todo va por WebSocket en el 443 (wss://SERVER/ws/id, /ws/relay y /api, Caddy en el VPS): pasa los
-  // firewalls de empresa que bloquean 21115-21117. Sin conexión directa: siempre por el relay propio.
+  // El estado (/api) va por el 443 (Caddy en el VPS). La conexión NO va por WebSocket: el servidor libre de
+  // RustDesk (hbbs) no registra equipos por WebSocket ni TCP (responde NOT_SUPPORT); solo por UDP 21116.
   ['pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
-    `pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'approve-mode': 'click', 'custom-rendezvous-server': SERVER, 'key': KEY, 'api-server': `https://${SERVER}`, 'allow-websocket': 'Y' })};`],
+    `pub static ref OVERWRITE_SETTINGS: RwLock<HashMap<String, String>> = ${settings({ 'approve-mode': 'click', 'custom-rendezvous-server': SERVER, 'key': KEY, 'api-server': `https://${SERVER}` })};`],
   // El usuario no puede cambiar el servidor ni la red: siempre ZentryDesk. El crédito a RustDesk queda en
   // "Acerca de" y en las propiedades del ejecutable (AGPL), no en la pantalla principal.
   ['pub static ref BUILTIN_SETTINGS: RwLock<HashMap<String, String>> = Default::default();',
