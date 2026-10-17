@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const SERVER = process.env.ZD_SERVER || 'soporte.zentrydesk.com';
+const SERVER = process.env.ZD_SERVER || 'remoto.zentrydesk.com';
 const KEY = process.env.ZD_KEY || 'T5uTdG9HEO+YeapTrKUVOQs73jMeYwSHSuzpzceha7g=';
 const APP = 'ZentryDesk';
 
