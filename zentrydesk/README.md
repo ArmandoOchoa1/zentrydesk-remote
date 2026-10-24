@@ -5,8 +5,8 @@ Cliente de asistencia remota de [ZentryDesk](https://zentrydesk.com) (Backend Pe
 
 Cambios respecto de RustDesk (todos en `zentrydesk/personalizar.js`, que se aplica al compilar):
 
-- Nombre de la app: **ZentryDesk** y el logo de ZentryDesk (`zentrydesk/iconos`, generados con `generar-iconos.js`).
-- Servidor `soporte.zentrydesk.com` y su clave pública incluidos.
+- Nombre de la app: **ZentryDesk** y el logo de ZentryDesk —monitor mostaza con la Z negra— (`zentrydesk/iconos`, generados con `generar-iconos.js` y `generar-logo.ps1`).
+- Servidor `remoto.zentrydesk.com` y su clave pública incluidos.
 - Aceptación por clic obligatoria en cada conexión entrante (`approve-mode=click`).
 - Ajustes de servidor, proxy y websocket ocultos.
 

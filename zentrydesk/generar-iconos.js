@@ -1,11 +1,11 @@
-// Dibuja el logo de ZentryDesk (globo rojo con la Z negra, igual que public/favicon.svg) en PNG e ICO,
+// Dibuja el logo de ZentryDesk (monitor mostaza con la Z negra, igual que el favicon de zentrydesk.com) en PNG e ICO,
 // sin librerías: rasterizado con supermuestreo 4x4 sobre el diseño de 64x64.
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const out = process.argv[2] || __dirname;
 
-const RED = [0xE1, 0x06, 0x00]; const BLACK = [0x0B, 0x0B, 0x0D];
+const MOSTAZA = [0xE2, 0xA6, 0x0F]; const BLACK = [0x0B, 0x0B, 0x0D];
 function inRoundRect(x, y, x0, y0, x1, y1, r) {
   if (x < x0 || x > x1 || y < y0 || y > y1) return false;
   const cx = Math.min(Math.max(x, x0 + r), x1 - r); const cy = Math.min(Math.max(y, y0 + r), y1 - r);
@@ -22,9 +22,10 @@ function distSeg(x, y, ax, ay, bx, by) {
 }
 const W = 3.25; // media anchura del trazo de la Z (6.5)
 function color(x, y) {
-  const z = (y >= 16 - W && y <= 16 + W && x >= 21 - W && x <= 43 + W) || (y >= 39 - W && y <= 39 + W && x >= 21 - W && x <= 43 + W) || distSeg(x, y, 43, 16, 21, 39) <= W;
+  const z = (y >= 15 - W && y <= 15 + W && x >= 21 - W && x <= 43 + W) || (y >= 38 - W && y <= 38 + W && x >= 21 - W && x <= 43 + W) || distSeg(x, y, 43, 15, 21, 38) <= W;
   if (z) return BLACK;
-  if (inRoundRect(x, y, 5, 5, 59, 50, 9) || inTri(x, y, [15, 49], [28, 49], [15, 60])) return RED;
+  // Pantalla (5,6)-(59,47) con radio 9 y pie del monitor: trapecio (25,47)-(39,47)-(42,57)-(22,57).
+  if (inRoundRect(x, y, 5, 6, 59, 47, 9) || inTri(x, y, [25, 46], [39, 46], [42, 57]) || inTri(x, y, [25, 46], [42, 57], [22, 57])) return MOSTAZA;
   return null;
 }
 function render(size) {
