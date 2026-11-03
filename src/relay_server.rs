@@ -35,6 +35,40 @@ lazy_static::lazy_static! {
     static ref USAGE: RwLock<HashMap<String, Usage>> = Default::default();
     static ref BLACKLIST: RwLock<HashSet<String>> = Default::default();
     static ref BLOCKLIST: RwLock<HashSet<String>> = Default::default();
+    // ZentryDesk: conexiones abiertas por IP (ver IpSlot).
+    static ref CONNS_PER_IP: std::sync::Mutex<HashMap<std::net::IpAddr, usize>> = Default::default();
+}
+
+// ZentryDesk: una sola IP no puede abrir conexiones sin fin al relay (cada una espera hasta 30 s a su pareja
+// y ocupa un descriptor). Una oficina detrás de una IP con muchas sesiones a la vez sigue entrando holgada.
+const MAX_CONNS_PER_IP: usize = 100;
+// ZentryDesk: el cliente manda su RequestRelay apenas conecta; quien no habla en 10 s se corta (antes 30 s).
+const FIRST_MESSAGE_TIMEOUT_MS: u64 = 10_000;
+
+struct IpSlot(std::net::IpAddr);
+
+impl IpSlot {
+    fn take(ip: std::net::IpAddr) -> Option<IpSlot> {
+        let mut m = CONNS_PER_IP.lock().unwrap();
+        let n = m.entry(ip).or_insert(0);
+        if *n >= MAX_CONNS_PER_IP {
+            return None;
+        }
+        *n += 1;
+        Some(IpSlot(ip))
+    }
+}
+
+impl Drop for IpSlot {
+    fn drop(&mut self) {
+        let mut m = CONNS_PER_IP.lock().unwrap();
+        if let Some(n) = m.get_mut(&self.0) {
+            *n = n.saturating_sub(1);
+            if *n == 0 {
+                m.remove(&self.0);
+            }
+        }
+    }
 }
 
 static DOWNGRADE_THRESHOLD_100: AtomicUsize = AtomicUsize::new(66); // 0.66
@@ -424,7 +458,14 @@ async fn make_pair(
 
 async fn make_pair_(stream: impl StreamTrait, addr: SocketAddr, key: &str, limiter: Limiter) {
     let mut stream = stream;
-    if let Ok(Some(Ok(bytes))) = timeout(30_000, stream.recv()).await {
+    let _slot = match IpSlot::take(addr.ip()) {
+        Some(s) => s,
+        None => {
+            log::warn!("Relay: demasiadas conexiones desde {}", addr.ip());
+            return;
+        }
+    };
+    if let Ok(Some(Ok(bytes))) = timeout(FIRST_MESSAGE_TIMEOUT_MS, stream.recv()).await {
         if let Ok(msg_in) = RendezvousMessage::parse_from_bytes(&bytes) {
             if let Some(rendezvous_message::Union::RequestRelay(rf)) = msg_in.union {
                 if !key.is_empty() && rf.licence_key != key {
